@@ -1,7 +1,7 @@
 // api/wetter.js
 export default async function handler(request, response) {
   
-  const openMeteoUrl = "https://api.open-meteo.com/v1/forecast?latitude=48.8147&longitude=11.7525&hourly=temperature_2m,weathercode&daily=precipitation_sum&timezone=Europe%2FBerlin";
+  const openMeteoUrl = "https://api.open-meteo.com/v1/dwd-icon?latitude=48.8147&longitude=11.7525&hourly=rain,snowfall,temperature_2m,relativehumidity_2m,dewpoint_2m,precipitation,weathercode,pressure_msl,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windgusts_10m,winddirection_10m&daily=precipitation_sum&timeformat=unixtime&timezone=Europe%2FBerlin";
   
   try {
     const apiResponse = await fetch(openMeteoUrl);
