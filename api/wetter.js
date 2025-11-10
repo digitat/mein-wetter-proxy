@@ -1,10 +1,18 @@
 // api/wetter.js
+
 export default async function handler(request, response) {
   
-  const openMeteoUrl = "https://api.open-meteo.com/v1/dwd-icon?latitude=48.8147&longitude=11.7525&hourly=rain,snowfall,temperature_2m,relativehumidity_2m,dewpoint_2m,precipitation,weathercode,pressure_msl,cloudcover_low,cloudcover_mid,cloudcover_high,windspeed_10m,windgusts_10m,winddirection_10m&daily=precipitation_sum&timeformat=unixtime&timezone=Europe%2FBerlin";
+  // Die Basis-URL von Open-Meteo
+  const openMeteoBaseUrl = "https://api.open-meteo.com/v1/dwd-icon";
   
+  // Diese Zeile nimmt alles, was nach dem Fragezeichen in deiner Anfrage kommt...
+  const queryString = request.url.split('?')[1] || '';
+
+  // ...und hängt es an die Open-Meteo URL an.
+  const finalOpenMeteoUrl = `${openMeteoBaseUrl}?${queryString}`;
+
   try {
-    const apiResponse = await fetch(openMeteoUrl);
+    const apiResponse = await fetch(finalOpenMeteoUrl);
     const data = await apiResponse.json();
     
     response.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,7 +20,7 @@ export default async function handler(request, response) {
     return response.status(200).json(data);
 
   } catch (error) {
-    console.error(error);
+    console.error("Fehler beim Abruf von:", finalOpenMeteoUrl, error);
     return response.status(500).json({ 
       error: "Proxy-Fehler", 
       message: error.message 
