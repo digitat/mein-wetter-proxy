@@ -4,50 +4,44 @@ export default async function handler(request, context) {
   
   const openMeteoBaseUrl = "https://api.open-meteo.com";
   
-  // request.url ist "/v1/forecast?latitude=..." (dank netlify.toml)
-  const incomingUrl = request.url;
+  // 1. KORREKTUR: Die 'request.url' ist die volle URL (inkl. https://...).
+  // Wir brauchen nur den Pfad (z.B. "/v1/forecast") und die Query (z.B. "?latitude=...")
+  const url = new URL(request.url);
+  const pathAndQuery = `${url.pathname}${url.search}`;
 
-  const finalOpenMeteoUrl = `${openMeteoBaseUrl}${incomingUrl}`;
+  // Wir bauen die finale URL für Open-Meteo
+  const finalOpenMeteoUrl = `${openMeteoBaseUrl}${pathAndQuery}`;
 
   try {
     const apiResponse = await fetch(finalOpenMeteoUrl);
-    
-    // Wir holen uns die Daten, egal ob Fehler oder nicht
+
+    // Wir lesen die Daten von Open-Meteo
     const data = await apiResponse.json();
 
-    // WICHTIG: Prüfen, ob Open-Meteo einen Fehler gemeldet hat
-    if (!apiResponse.ok) {
-      console.error("Fehler von Open-Meteo:", apiResponse.status, data);
-      
-      // Fehler an das Frontend weitergeben
-      return {
-        statusCode: apiResponse.status, // z.B. 400
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify(data)
-      };
-    }
-
-    // Alles gut, Daten zurückgeben
-    return {
-      statusCode: 200,
-      headers: { 
+    // 2. KORREKTUR: Wir erstellen eine standardisierte 'Response'
+    // Dies ist der "moderne" Netlify-Weg.
+    return new Response(JSON.stringify(data), {
+      status: apiResponse.status, // Wir leiten den Status von Open-Meteo weiter (z.B. 200 oder 400)
+      headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: JSON.stringify(data)
-    };
+        "Access-Control-Allow-Origin": "*" // Wichtig für CORS
+      }
+    });
 
   } catch (error) {
-    // Netzwerkfehler ("fetch failed") oder .json() Fehler
+    // Netzwerkfehler ("fetch failed")
     console.error("Schwerer Proxy-Fehler:", finalOpenMeteoUrl, error);
     
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({
-        error: "Proxy-Fehler (Netzwerk)",
-        message: error.message
-      })
-    };
+    // 2. KORREKTUR: Auch Fehler als standardisierte 'Response' zurückgeben
+    return new Response(JSON.stringify({
+      error: "Proxy-Fehler (Netzwerk)",
+      message: error.message
+    }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
   }
 }
