@@ -1,6 +1,4 @@
-# netlify.toml
-
 [[redirects]]
   from = "/v1/*"
   to = "/.netlify/functions/proxy"
-  status = 200 # Dies ist ein "Rewrite", kein "Redirect"
+  status = 200
