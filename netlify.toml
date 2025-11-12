@@ -1,3 +1,6 @@
-[[rewrites]]
-  source = "/v1/*"
-  destination = "/.netlify/functions/proxy"
+# netlify.toml
+
+[[redirects]]
+  from = "/v1/*"
+  to = "/.netlify/functions/proxy"
+  status = 200 # Dies ist ein "Rewrite", kein "Redirect"
